@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controller.UserController">
+   <children>
+      <SplitPane dividerPositions="0.7006688963210702" prefHeight="400.0" prefWidth="600.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <TableView fx:id="tableView" prefHeight="398.0" prefWidth="420.0">
+                    <columns>
+                      <TableColumn fx:id="tableColumnFirstName" prefWidth="140.0" text="First Name" />
+                      <TableColumn fx:id="tableColumnLastName" prefWidth="140.0" text="Last Name" />
+                      <TableColumn fx:id="tableColumnFriendsSince" prefWidth="140.0" text="Friends Since" />
+                    </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <Button layoutX="73.0" layoutY="187.0" mnemonicParsing="false" onAction="#handleAddFriend" text="Add" />
+                  <Button layoutX="67.0" layoutY="235.0" mnemonicParsing="false" onAction="#handleDeleteFriend" text="Delete" />
+                  <Button layoutX="60.0" layoutY="279.0" mnemonicParsing="false" onAction="#handleFriendRequests" text="Requests" />
+                  <Button layoutX="60.0" layoutY="23.0" mnemonicParsing="false" onAction="#handleReload" text="Reload" />
+               </children></AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controller.LoginController">
+   <children>
+      <Pane prefHeight="400.0" prefWidth="600.0">
+         <children>
+            <ComboBox layoutX="225.0" layoutY="188.0" prefWidth="150.0" fx:id="comboUser" onAction="#onUserSelected"/>
+            <Label layoutX="273.0" layoutY="147.0" text="alege user" />
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
