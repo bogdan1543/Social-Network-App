@@ -189,6 +189,7 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
         }
     }
 
+
     public void removeFriendship(Integer id1, Integer id2){
         Integer frId = 0;
         for (Friendship friendship : friendshipRepository.findAll()) {
