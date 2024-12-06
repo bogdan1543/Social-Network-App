@@ -98,7 +98,7 @@ public class Console {
         System.out.println("Last name: ");
         String lastName = scan.nextLine();
         try {
-            socialNetwork.addUser(new User(firstName, lastName));
+            socialNetwork.addUser(new User(null, null,firstName, lastName));
         } catch (ValidationException e) {
             System.out.println("Invalid user!");
         } catch (IllegalArgumentException e) {

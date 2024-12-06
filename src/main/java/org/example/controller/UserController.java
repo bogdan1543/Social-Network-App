@@ -14,6 +14,7 @@ import org.example.HelloApplication;
 import org.example.domain.Friendship;
 import org.example.domain.User;
 import org.example.domain.UserDate;
+import org.example.service.ChatMessages;
 import org.example.service.SocialNetwork;
 import org.example.utils.events.UserEntityChangeEvent;
 import org.example.utils.observer.Observer;
@@ -30,16 +31,19 @@ public class UserController implements Observer<UserEntityChangeEvent> {
     public TextField fieldPrenume;
 
     SocialNetwork service;
+
+    ChatMessages chatService;
     User user;
     ObservableList<UserDate> model = FXCollections.observableArrayList();
 
 
 
-    public void setUserService(SocialNetwork service, User user){
+    public void setUserService(SocialNetwork service,ChatMessages chatService, User user){
         this.service = service;
+        this.chatService = chatService;
         this.user = user;
-        initModel();
         this.service.addObserver(this);
+        initModel();
     }
 
     @FXML
@@ -97,7 +101,7 @@ public class UserController implements Observer<UserEntityChangeEvent> {
 
             AddFriendController addFriendController = loader.getController();
             addFriendController.setUserService(service, user, dialogStage);
-            System.out.println(user.getFirstName());
+
 
             dialogStage.show();
 
@@ -140,7 +144,7 @@ public class UserController implements Observer<UserEntityChangeEvent> {
 
             FriendRequestsController friendRequestsController = loader.getController();
             friendRequestsController.setUserService(service, user, dialogStage);
-            System.out.println(user.getFirstName());
+
 
             dialogStage.show();
 
@@ -148,6 +152,31 @@ public class UserController implements Observer<UserEntityChangeEvent> {
             e.printStackTrace();
         }
     }
+
+    private void showChatDialog(User from, User to) {
+        try {
+            // create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("chat-view.fxml"));
+
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Chat");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            //dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(loader.load());
+            dialogStage.setScene(scene);
+
+            ChatController chatController = loader.getController();
+            chatController.setUserService(chatService, from, to, dialogStage);
+
+            dialogStage.show();
+
+        } catch ( IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public void update(UserEntityChangeEvent userEntityChangeEvent) {
@@ -158,5 +187,12 @@ public class UserController implements Observer<UserEntityChangeEvent> {
     public void handleReload(ActionEvent actionEvent) {
         initialize();
         initModel();
+    }
+
+    public void handleChat(ActionEvent actionEvent) {
+        if (!tableView.getSelectionModel().isEmpty()){
+            UserDate friend = tableView.getSelectionModel().getSelectedItem();
+            showChatDialog(user, friend.getUser());
+        }
     }
 }

@@ -29,7 +29,9 @@ public class UserDBRepository implements Repository<Integer, User> {
             while (resultSet.next()) {
                 String firstName = resultSet.getString("nume");
                 String lastName = resultSet.getString("prenume");
-                user = new User(firstName, lastName);
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
+                user = new User(username, password, firstName, lastName);
                 user.setId(id);
             }
 
@@ -48,9 +50,11 @@ public class UserDBRepository implements Repository<Integer, User> {
 
             while (resultSet.next()) {
                 Integer id = resultSet.getInt("id");
-                String nume = resultSet.getString("nume");
-                String prenume = resultSet.getString("prenume");
-                User user = new User(nume, prenume);
+                String firstName = resultSet.getString("nume");
+                String lastName = resultSet.getString("prenume");
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
+                User user = new User(username, password, firstName, lastName);
                 user.setId(id);
 
                 users.put(user.getId(), user);
@@ -66,13 +70,15 @@ public class UserDBRepository implements Repository<Integer, User> {
         if (entity == null) {
             throw new IllegalArgumentException("User can't be null!");
         }
-        String query = "INSERT INTO users(\"id\", \"nume\", \"prenume\") VALUES (?,?,?)";
+        String query = "INSERT INTO users(\"id\", \"nume\", \"prenume\", \"username\", \"password\") VALUES (?,?,?,?,?)";
 
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:1234/postgres", "postgres", "admin");
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setLong(1, entity.getId());
             statement.setString(2, entity.getFirstName());
             statement.setString(3, entity.getLastName());
+            statement.setString(4, entity.getUsername());
+            statement.setString(5, entity.getPassword());
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);

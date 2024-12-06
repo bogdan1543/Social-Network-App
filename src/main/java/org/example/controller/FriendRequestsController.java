@@ -66,8 +66,6 @@ public class FriendRequestsController implements Observer<UserEntityChangeEvent>
             User sender = tableView.getSelectionModel().getSelectedItem();
             Friendship friendship = service.getFriendshipById(user.getId(), sender.getId());
             service.respondFriendRequest(friendship, FriendRequest.ACCEPTED);
-            initModel();
-            initialize();
         }
     }
 
@@ -76,13 +74,10 @@ public class FriendRequestsController implements Observer<UserEntityChangeEvent>
             User sender = tableView.getSelectionModel().getSelectedItem();
             Friendship friendship = service.getFriendshipById(user.getId(), sender.getId());
             service.respondFriendRequest(friendship, FriendRequest.REJECTED);
-            initModel();
-            initialize();
         }
     }
 
     public void handleGoBack(ActionEvent actionEvent) {
-        service.removeObserver(this);
         currentStage.close();
     }
 }

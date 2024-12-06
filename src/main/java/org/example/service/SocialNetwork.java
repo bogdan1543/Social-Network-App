@@ -2,11 +2,14 @@ package org.example.service;
 
 import org.example.domain.FriendRequest;
 import org.example.domain.Friendship;
+import org.example.domain.Message;
 import org.example.domain.User;
 import org.example.domain.validator.ValidationException;
 import org.example.repository.FriendshipDBRepository;
+import org.example.repository.MessageDBRepository;
 import org.example.repository.UserDBRepository;
 import org.example.utils.events.ChangeEventType;
+import org.example.utils.events.MessageEntityChangeEvent;
 import org.example.utils.events.UserEntityChangeEvent;
 import org.example.utils.observer.Observer;
 import org.example.utils.observer.Observable;
@@ -19,11 +22,13 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
     private final UserDBRepository userRepository;
     private FriendshipDBRepository friendshipRepository;
 
-    private List<Observer<UserEntityChangeEvent>> observers=new ArrayList<>();
+    private List<Observer<UserEntityChangeEvent>> userObservers;
 
-    public SocialNetwork(UserDBRepository userRepository, FriendshipDBRepository friendshipRepository) {
+
+    public SocialNetwork(UserDBRepository userRepository, FriendshipDBRepository friendshipRepository, MessageDBRepository messageRepository) {
         this.userRepository = userRepository;
         this.friendshipRepository = friendshipRepository;
+        this.userObservers = new ArrayList<>();
     }
 
     public Integer getNewUserId(){
@@ -156,11 +161,13 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
             else if (friendship != null && friendship.getFriendRequestStatus() == FriendRequest.REJECTED) {
                 friendship.setFriendRequestStatus(FriendRequest.PENDING);
                 friendshipRepository.update(friendship);
+                notifyObservers(new UserEntityChangeEvent(ChangeEventType.UPDATE, findUser(id1)));
                 return true;
             } else {
                 Friendship f = new Friendship(id1, id2);
                 f.setId(getNewFriendshipId());
                 friendshipRepository.save(f);
+                notifyObservers(new UserEntityChangeEvent(ChangeEventType.ADD, findUser(id1)));
                 return true;
             }
         } catch (Exception e) {
@@ -180,8 +187,11 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
             friendshipReq.setFriendRequestStatus(response);
             if (response == FriendRequest.ACCEPTED)
                 friendshipReq.setDateTime(LocalDateTime.now());
+            else
+                friendshipReq.setDateTime(null);
 
             friendshipRepository.update(friendshipReq);
+            notifyObservers(new UserEntityChangeEvent(ChangeEventType.UPDATE, findUser(friendshipReq.getIdUser2())));
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -200,6 +210,7 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
             }
         }
         friendshipRepository.delete(frId).orElseThrow(() -> new ValidationException("Friendship doesn't exist!"));
+        notifyObservers(new UserEntityChangeEvent(ChangeEventType.DELETE, findUser(id1)));
     }
 
     public Map<User, LocalDateTime> getUserFriends(User user){
@@ -232,11 +243,27 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
         return userRepository.findOne(id).orElseThrow(() -> new ValidationException("No user"));
     }
 
+    public User findUserByUsername(String username){
+        for (User user : getUsers()){
+            if (Objects.equals(user.getUsername(), username)){
+                return user;
+            }
+        }
+        return null;
+    }
+
+
     @Override
     public void addObserver(Observer<UserEntityChangeEvent> e) {
-        observers.add(e);
+        userObservers.add(e);
 
     }
+
+//    @Override
+//    public void addObserver(Observer<MessageEntityChangeEvent> e) {
+//        messageObservers.add(e);
+//
+//    }
 
     @Override
     public void removeObserver(Observer<UserEntityChangeEvent> e) {
@@ -246,6 +273,7 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
     @Override
     public void notifyObservers(UserEntityChangeEvent t) {
 
-        observers.stream().forEach(x->x.update(t));
+        userObservers.forEach(x->x.update(t));
     }
+
 }

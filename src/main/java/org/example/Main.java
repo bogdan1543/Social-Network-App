@@ -21,8 +21,8 @@ public class Main {
         //InMemoryRepository<Integer, Friendship> repoFriendship = new InMemoryRepository<>(new FriendshipValidator(repoUser));
 
         // Create the social network service
-        SocialNetwork socialNetwork = new SocialNetwork(repoUser, repoFriendship);
-        Console ui = new Console(socialNetwork);
+        //SocialNetwork socialNetwork = new SocialNetwork(repoUser, repoFriendship);
+        //Console ui = new Console(socialNetwork);
 
 //        User u1 = new User("Maria", "Ionescu");
 //        User u2 = new User("Cristian", "Marin");
@@ -54,6 +54,6 @@ public class Main {
 //        }
 
         // Run the user interface
-        ui.run();
+        //ui.run();
     }
 }

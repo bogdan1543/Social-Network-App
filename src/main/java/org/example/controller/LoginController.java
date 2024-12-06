@@ -6,34 +6,42 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.HelloApplication;
 import org.example.domain.User;
+import org.example.service.ChatMessages;
 import org.example.service.SocialNetwork;
 import org.example.utils.events.UserEntityChangeEvent;
 import org.example.utils.observer.Observer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class LoginController implements Observer<UserEntityChangeEvent> {
+public class LoginController{
 
+    public TextField usernameTextField;
+    public TextField passwordTextField;
     SocialNetwork service;
+    ChatMessages chatService;
     ObservableList<User> model = FXCollections.observableArrayList();
-
+    
     @FXML
     ComboBox<User> comboUser;
 
 
-    public void setUserService(SocialNetwork service){
+    public void setUserService(SocialNetwork service, ChatMessages chatService){
         this.service = service;
+        this.chatService = chatService;
         initModel();
-        this.service.addObserver(this);
     }
 
     private void initModel() {
@@ -43,13 +51,10 @@ public class LoginController implements Observer<UserEntityChangeEvent> {
 
     @FXML
     public void initialize(){
-        comboUser.setItems(model);
+        usernameTextField.setPromptText("Username");
+        passwordTextField.setPromptText("Password");
     }
 
-    @Override
-    public void update(UserEntityChangeEvent userEntityChangeEvent) {
-        initModel();
-    }
 
 
     public void showUserEditDialog(User user) {
@@ -68,10 +73,22 @@ public class LoginController implements Observer<UserEntityChangeEvent> {
             dialogStage.setScene(scene);
 
             UserController userController = loader.getController();
-            userController.setUserService(service, user);
+            userController.setUserService(service,chatService, user);
             System.out.println(user.getFirstName());
 
             dialogStage.show();
+            int pendingFriendRequests = StreamSupport.stream(service.getUserFriendRequests(user).spliterator(), false).toList().size();
+            if(pendingFriendRequests > 0) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Notification");
+                alert.setHeaderText("You have new friend requests!");
+
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.setWidth(200);
+                alertStage.setHeight(100);
+
+                alert.showAndWait();
+            }
 
         } catch ( IOException e) {
             e.printStackTrace();
@@ -81,5 +98,11 @@ public class LoginController implements Observer<UserEntityChangeEvent> {
     @FXML
     public void onUserSelected(ActionEvent actionEvent) {
         showUserEditDialog(comboUser.getValue());
+    }
+
+    public void handleLogIn(ActionEvent actionEvent) {
+        User user = service.findUserByUsername(usernameTextField.getText());
+        if (user != null && Objects.equals(user.getPassword(), passwordTextField.getText()))
+            showUserEditDialog(user);
     }
 }

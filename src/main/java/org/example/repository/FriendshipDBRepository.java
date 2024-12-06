@@ -127,7 +127,12 @@ public class FriendshipDBRepository implements Repository<Integer, Friendship> {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:1234/postgres", "postgres", "admin");
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, entity.getFriendRequestStatus().toString());
-            statement.setTimestamp(2, Timestamp.valueOf(entity.getDateTime()));
+            if(entity.getDateTime() == null){
+                statement.setTimestamp(2, null);
+            }
+            else {
+                statement.setTimestamp(2, Timestamp.valueOf(entity.getDateTime()));
+            }
             statement.setInt(3, entity.getId());
             statement.executeUpdate();
         } catch (SQLException e) {

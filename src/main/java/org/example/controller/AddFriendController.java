@@ -9,6 +9,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import org.example.domain.FriendRequest;
 import org.example.domain.Friendship;
 import org.example.domain.User;
 import org.example.service.SocialNetwork;
@@ -51,7 +52,9 @@ public class AddFriendController implements Observer<UserEntityChangeEvent> {
         List<User> nonFriends = new ArrayList<>();
         List<User> all_friends_and_pending = new ArrayList<>();
         for (Friendship f : service.getFriendships()){
-            if (Objects.equals(user.getId(), f.getIdUser1())){
+            if (f.getFriendRequestStatus() == FriendRequest.REJECTED)
+                continue;
+            else if (Objects.equals(user.getId(), f.getIdUser1())){
                 all_friends_and_pending.add(service.findUser(f.getIdUser2()));
             }else if (Objects.equals(user.getId(), f.getIdUser2())){
                 all_friends_and_pending.add(service.findUser(f.getIdUser1()));
@@ -70,7 +73,6 @@ public class AddFriendController implements Observer<UserEntityChangeEvent> {
 
     @FXML
     public void initialize() {
-        tableView.setItems(null);
         tableColumnFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         tableColumnLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         tableView.setItems(model);
@@ -82,8 +84,6 @@ public class AddFriendController implements Observer<UserEntityChangeEvent> {
         if(!tableView.getSelectionModel().isEmpty()){
             User sender = tableView.getSelectionModel().getSelectedItem();
             service.createFriendRequest(user.getId(), sender.getId());
-            initModel();
-            initialize();
         }
     }
 
@@ -93,7 +93,6 @@ public class AddFriendController implements Observer<UserEntityChangeEvent> {
     }
 
     public void handleGoBack(ActionEvent actionEvent) {
-        service.removeObserver(this);
         currentStage.close();
     }
 }
