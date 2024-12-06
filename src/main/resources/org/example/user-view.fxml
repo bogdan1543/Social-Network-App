@@ -9,13 +9,15 @@
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <TableView fx:id="tableView" prefHeight="398.0" prefWidth="420.0">
+                  <TableView fx:id="tableView" prefHeight="332.0" prefWidth="420.0">
                     <columns>
                       <TableColumn fx:id="tableColumnFirstName" prefWidth="140.0" text="First Name" />
                       <TableColumn fx:id="tableColumnLastName" prefWidth="140.0" text="Last Name" />
                       <TableColumn fx:id="tableColumnFriendsSince" prefWidth="140.0" text="Friends Since" />
                     </columns>
                   </TableView>
+                  <Button fx:id="nextButton" onAction="#handleNextPage" layoutX="307.0" layoutY="349.0" mnemonicParsing="false" text="next" />
+                  <Button fx:id="prevButton" onAction="#handleBackPage" layoutX="86.0" layoutY="349.0" mnemonicParsing="false" text="back" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">

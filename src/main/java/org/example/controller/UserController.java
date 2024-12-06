@@ -11,6 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.HelloApplication;
+import org.example.domain.FriendRequest;
 import org.example.domain.Friendship;
 import org.example.domain.User;
 import org.example.domain.UserDate;
@@ -18,24 +19,32 @@ import org.example.service.ChatMessages;
 import org.example.service.SocialNetwork;
 import org.example.utils.events.UserEntityChangeEvent;
 import org.example.utils.observer.Observer;
+import org.example.utils.paging.Page;
+import org.example.utils.paging.Pageable;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class UserController implements Observer<UserEntityChangeEvent> {
     public TextField fieldNume;
     public TextField fieldPrenume;
+    public Button nextButton;
+    public Button prevButton;
 
     SocialNetwork service;
 
     ChatMessages chatService;
     User user;
     ObservableList<UserDate> model = FXCollections.observableArrayList();
-
+    private int currentPage = 0;
+    private int pageSize = 2;
 
 
     public void setUserService(SocialNetwork service,ChatMessages chatService, User user){
@@ -56,12 +65,20 @@ public class UserController implements Observer<UserEntityChangeEvent> {
     TableColumn<UserDate, LocalDateTime> tableColumnFriendsSince;
 
     private void initModel() {
-        Map<User, LocalDateTime> all_friends= service.getUserFriends(user);
-        List<UserDate> all_friends_with_date = all_friends.entrySet()
-                .stream()
-                .map(entry -> new UserDate(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-        model.setAll(all_friends_with_date);
+        Page<Friendship> page = service.getFriendshipsOnPage(new Pageable(currentPage, pageSize), user);
+        List<Friendship> friendships = StreamSupport.stream(page.getElementsOnPage().spliterator(), false).toList();
+        List<UserDate> all_friends = new ArrayList<>();
+        for (Friendship f : friendships){
+            if ((!Objects.equals(f.getIdUser1(), user.getId()))){
+                all_friends.add(new UserDate(service.findUser(f.getIdUser1()), f.getDateTime()));
+            }else if ((!Objects.equals(f.getIdUser2(), user.getId()))){
+                all_friends.add(new UserDate(service.findUser(f.getIdUser2()), f.getDateTime()));
+            }
+        }
+        model.setAll(all_friends);
+        prevButton.setDisable(currentPage == 0);
+        int noOfPages = (int)(Math.ceil((double) page.getTotalNumberElements() / pageSize));
+        nextButton.setDisable(currentPage + 1 == noOfPages);
     }
 
     @FXML
@@ -194,5 +211,15 @@ public class UserController implements Observer<UserEntityChangeEvent> {
             UserDate friend = tableView.getSelectionModel().getSelectedItem();
             showChatDialog(user, friend.getUser());
         }
+    }
+
+    public void handleNextPage(ActionEvent actionEvent) {
+        currentPage++;
+        initModel();
+    }
+
+    public void handleBackPage(ActionEvent actionEvent) {
+        currentPage--;
+        initModel();
     }
 }

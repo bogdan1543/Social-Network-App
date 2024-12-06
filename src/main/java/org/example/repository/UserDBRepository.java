@@ -2,11 +2,14 @@ package org.example.repository;
 
 import org.example.domain.User;
 import org.example.domain.validator.UserValidator;
+import org.example.utils.paging.Page;
+import org.example.utils.paging.Pageable;
 
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 public class UserDBRepository implements Repository<Integer, User> {
 
@@ -112,4 +115,5 @@ public class UserDBRepository implements Repository<Integer, User> {
     public Optional<User> update(User entity) {
         return Optional.empty();
     }
+
 }

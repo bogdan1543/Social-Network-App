@@ -13,6 +13,8 @@ import org.example.utils.events.MessageEntityChangeEvent;
 import org.example.utils.events.UserEntityChangeEvent;
 import org.example.utils.observer.Observer;
 import org.example.utils.observer.Observable;
+import org.example.utils.paging.Page;
+import org.example.utils.paging.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -250,6 +252,10 @@ public class SocialNetwork implements Observable<UserEntityChangeEvent>{
             }
         }
         return null;
+    }
+
+    public Page<Friendship> getFriendshipsOnPage(Pageable pageable, User user){
+        return friendshipRepository.findAllOnPage(pageable, user);
     }
 
 

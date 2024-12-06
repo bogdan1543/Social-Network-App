@@ -4,15 +4,15 @@ import org.example.domain.FriendRequest;
 import org.example.domain.Friendship;
 import org.example.domain.User;
 import org.example.domain.validator.FriendshipValidator;
+import org.example.utils.paging.Page;
+import org.example.utils.paging.Pageable;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
-public class FriendshipDBRepository implements Repository<Integer, Friendship> {
+public class FriendshipDBRepository implements PagingRepository<Integer, Friendship> {
 
     FriendshipValidator friendshipValidator;
 
@@ -140,5 +140,40 @@ public class FriendshipDBRepository implements Repository<Integer, Friendship> {
         }
 
         return Optional.of(entity);
+    }
+    @Override
+    public Page<Friendship> findAllOnPage(Pageable pageable, User user) {
+        Map<Integer, Friendship> friendships = new HashMap<>();
+        String query = "SELECT * FROM friendships where \"idfriend1\" = ? or \"idfriend2\" = ? and \"status\" = ? LIMIT ? OFFSET ? ";
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:1234/postgres", "postgres", "admin");
+             PreparedStatement statement = connection.prepareStatement(query);) {
+
+            statement.setInt(1, user.getId());
+            statement.setInt(2, user.getId());
+            statement.setString(3, "ACCEPTED");
+            statement.setInt(4, pageable.getPageSize());
+            statement.setInt(5, pageable.getPageSize()*pageable.getPageNumber());
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Integer id = resultSet.getInt("id");
+                Integer idFriend1 = resultSet.getInt("idfriend1");
+                Integer idFriend2 = resultSet.getInt("idfriend2");
+                String status = resultSet.getString("status");
+                LocalDateTime dateTime = null;
+                if (resultSet.getTimestamp("friendSince") != null)
+                    dateTime = resultSet.getTimestamp("friendSince").toLocalDateTime();
+                Friendship friendship = new Friendship(idFriend1, idFriend2, dateTime);
+                friendship.setId(id);
+                friendship.setFriendRequestStatus(FriendRequest.valueOf(status));
+
+                friendships.put(friendship.getId(), friendship);
+            }
+            int friendshipsCount = StreamSupport.stream(findAll().spliterator(), false).toList().size();
+            return new Page<>(friendships.values(), friendshipsCount);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
